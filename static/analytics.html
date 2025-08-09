@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Shop Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --coffee-primary: #8B4513;
+            --coffee-dark: #5D2F0A;
+            --coffee-light: #D2B48C;
+            --cream: #F5F5DC;
+            --bg-primary: #FAFAFA;
+            --bg-secondary: #FFFFFF;
+            --text-primary: #2D2D2D;
+            --text-secondary: #666666;
+            --border-light: #E0E0E0;
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --info: #3B82F6;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--coffee-primary) 0%, var(--coffee-dark) 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dashboard-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .dashboard-title h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+        
+        .time-selector {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+        
+        .time-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        .time-btn.active,
+        .time-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+        }
+        
+        .dashboard-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-light);
+        }
+        
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .metric-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .metric-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+        }
+        
+        .change-positive {
+            color: var(--success);
+        }
+        
+        .change-negative {
+            color: var(--error);
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-light);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        
+        .secondary-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--text-secondary);
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-light);
+            border-top: 2px solid var(--coffee-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .popular-items {
+            list-style: none;
+        }
+        
+        .popular-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .popular-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .item-rank {
+            background: var(--coffee-light);
+            color: var(--coffee-dark);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .item-name {
+            font-weight: 500;
+        }
+        
+        .item-stats {
+            text-align: right;
+        }
+        
+        .item-orders {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .item-change {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+        
+        .refresh-btn {
+            background: var(--coffee-primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+        
+        .refresh-btn:hover {
+            background: var(--coffee-dark);
+        }
+        
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .secondary-charts {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-content {
+                padding: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-header">
+        <div class="header-content">
+            <div class="dashboard-title">
+                <span style="font-size: 2rem;">📊</span>
+                <h1>Coffee Shop Analytics</h1>
+            </div>
+            <div class="time-selector">
+                <button class="time-btn" data-days="1">24h</button>
+                <button class="time-btn active" data-days="7">7d</button>
+                <button class="time-btn" data-days="30">30d</button>
+                <button class="refresh-btn" onclick="refreshDashboard()">
+                    <span>🔄</span> Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <!-- KPI Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Total Conversations</span>
+                    <div class="metric-icon" style="background: #E3F2FD; color: #1976D2;">💬</div>
+                </div>
+                <div class="metric-value" id="totalConversations">-</div>
+                <div class="metric-change">
+                    <span class="change-positive">↗️ +12%</span> vs last period
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Orders Completed</span>
+                    <div class="metric-icon" style="background: #E8F5E8; color: #388E3C;">☕</div>
+                </div>
+                <div class="metric-value" id="totalOrders">-</div>
+                <div class="metric-change">
+                    <span class="change-positive">↗️ +8%</span> vs last period
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Conversion Rate</span>
+                    <div class="metric-icon" style="background: #FFF3E0; color: #F57C00;">📈</div>
+                </div>
+                <div class="metric-value" id="conversionRate">-</div>
+                <div class="metric-change">
+                    <span class="change-positive">↗️ +3%</span> vs last period
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Customer Satisfaction</span>
+                    <div class="metric-icon" style="background: #FCE4EC; color: #C2185B;">⭐</div>
+                </div>
+                <div class="metric-value" id="customerSatisfaction">-</div>
+                <div class="metric-change">
+                    <span class="change-positive">↗️ +0.2</span> vs last period
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Conversations & Orders Over Time</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="conversationsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Popular Items</h3>
+                </div>
+                <div class="chart-container">
+                    <ul class="popular-items" id="popularItemsList">
+                        <li class="loading">
+                            <div class="spinner"></div>
+                            Loading popular items...
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Charts -->
+        <div class="secondary-charts">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Daily Activity Pattern</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Customer Mood Distribution</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="moodChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">AI Performance</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="aiPerformanceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Weather Impact</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="weatherChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AnalyticsDashboard {
+            constructor() {
+                this.charts = {};
+                this.currentPeriod = 7;
+                this.refreshInterval = null;
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.loadDashboard();
+                this.startAutoRefresh();
+            }
+
+            bindEvents() {
+                // Time period selector
+                document.querySelectorAll('.time-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentPeriod = parseInt(e.target.dataset.days);
+                        this.loadDashboard();
+                    });
+                });
+            }
+
+            async loadDashboard() {
+                try {
+                    const response = await fetch(`/analytics/dashboard?days=${this.currentPeriod}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.updateMetrics(result.data);
+                        this.createCharts(result.data);
+                    } else {
+                        console.error('Failed to load dashboard data');
+                    }
+                } catch (error) {
+                    console.error('Error loading dashboard:', error);
+                    // Load mock data for demo
+                    this.loadMockData();
+                }
+            }
+
+            updateMetrics(data) {
+                const overview = data.overview || {};
+                
+                document.getElementById('totalConversations').textContent = 
+                    this.formatNumber(overview.total_conversations || 0);
+                document.getElementById('totalOrders').textContent = 
+                    this.formatNumber(overview.total_orders || 0);
+                document.getElementById('conversionRate').textContent = 
+                    `${(overview.conversion_rate || 0).toFixed(1)}%`;
+                document.getElementById('customerSatisfaction').textContent = 
+                    `${(overview.customer_satisfaction || 0).toFixed(1)}⭐`;
+            }
+
+            createCharts(data) {
+                this.createConversationsChart(data.conversations || {});
+                this.createActivityChart(data.hourly_activity || []);
+                this.createMoodChart(data.mood_analysis || {});
+                this.createAIPerformanceChart(data.ai_performance || {});
+                this.createWeatherChart(data.weather_impact || {});
+                this.updatePopularItems(data.popular_items || []);
+            }
+
+            createConversationsChart(conversationData) {
+                const ctx = document.getElementById('conversationsChart').getContext('2d');
+                
+                if (this.charts.conversations) {
+                    this.charts.conversations.destroy();
+                }
+
+                const daily = conversationData.daily_conversations || [];
+                
+                this.charts.conversations = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: daily.map(d => new Date(d.date).toLocaleDateString()),
+                        datasets: [{
+                            label: 'Conversations',
+                            data: daily.map(d => d.conversations),
+                            borderColor: '#8B4513',
+                            backgroundColor: 'rgba(139, 69, 19, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            createActivityChart(hourlyData) {
+                const ctx = document.getElementById('activityChart').getContext('2d');
+                
+                if (this.charts.activity) {
+                    this.charts.activity.destroy();
+                }
+
+                this.charts.activity = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: hourlyData.map(d => d.hour),
+                        datasets: [{
+                            label: 'Messages',
+                            data: hourlyData.map(d => d.activity),
+                            backgroundColor: 'rgba(139, 69, 19, 0.6)',
+                            borderColor: '#8B4513',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            createMoodChart(moodData) {
+                const ctx = document.getElementById('moodChart').getContext('2d');
+                
+                if (this.charts.mood) {
+                    this.charts.mood.destroy();
+                }
+
+                const distribution = moodData.mood_distribution || {};
+                
+                this.charts.mood = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(distribution),
+                        datasets: [{
+                            data: Object.values(distribution),
+                            backgroundColor: [
+                                '#22C55E',
+                                '#6B7280',
+                                '#EF4444',
+                                '#F59E0B',
+                                '#8B5CF6'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            createAIPerformanceChart(aiData) {
+                const ctx = document.getElementById('aiPerformanceChart').getContext('2d');
+                
+                if (this.charts.aiPerformance) {
+                    this.charts.aiPerformance.destroy();
+                }
+
+                const responseTimes = aiData.response_times || {};
+                
+                this.charts.aiPerformance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Avg Response', 'P95', 'P99'],
+                        datasets: [{
+                            label: 'Response Time (s)',
+                            data: [
+                                responseTimes.avg || 0,
+                                responseTimes.p95 || 0,
+                                responseTimes.p99 || 0
+                            ],
+                            backgroundColor: ['#22C55E', '#F59E0B', '#EF4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Seconds'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            createWeatherChart(weatherData) {
+                const ctx = document.getElementById('weatherChart').getContext('2d');
+                
+                if (this.charts.weather) {
+                    this.charts.weather.destroy();
+                }
+
+                const preferences = weatherData.weather_preferences || {};
+                
+                this.charts.weather = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Cold Days', 'Hot Days', 'Rainy Days'],
+                        datasets: [{
+                            label: 'Hot Drinks %',
+                            data: [85, 25, 70],
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)'
+                        }, {
+                            label: 'Cold Drinks %',
+                            data: [15, 75, 30],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+
+            updatePopularItems(items) {
+                const container = document.getElementById('popularItemsList');
+                
+                if (!items || items.length === 0) {
+                    container.innerHTML = '<li class="loading">No data available</li>';
+                    return;
+                }
+
+                container.innerHTML = items.map((item, index) => `
+                    <li class="popular-item">
+                        <div class="item-info">
+                            <div class="item-rank">${index + 1}</div>
+                            <div class="item-name">${item.name}</div>
+                        </div>
+                        <div class="item-stats">
+                            <div class="item-orders">${this.formatNumber(item.orders)}</div>
+                            <div class="item-change ${item.change >= 0 ? 'change-positive' : 'change-negative'}">
+                                ${item.change >= 0 ? '↗️' : '↘️'} ${Math.abs(item.change).toFixed(1)}%
+                            </div>
+                        </div>
+                    </li>
+                `).join('');
+            }
+
+            loadMockData() {
+                // Mock data for when API is unavailable
+                const mockData = {
+                    overview: {
+                        total_conversations: 1247,
+                        total_orders: 342,
+                        conversion_rate: 27.4,
+                        customer_satisfaction: 4.2
+                    },
+                    conversations: {
+                        daily_conversations: [
+                            {date: '2024-01-15', conversations: 45},
+                            {date: '2024-01-16', conversations: 52},
+                            {date: '2024-01-17', conversations: 38},
+                            {date: '2024-01-18', conversations: 61},
+                            {date: '2024-01-19', conversations: 55},
+                            {date: '2024-01-20', conversations: 72},
+                            {date: '2024-01-21', conversations: 68}
+                        ]
+                    },
+                    hourly_activity: [
+                        {hour: '06:00', activity: 5}, {hour: '07:00', activity: 12},
+                        {hour: '08:00', activity: 25}, {hour: '09:00', activity: 35},
+                        {hour: '10:00', activity: 42}, {hour: '11:00', activity: 38},
+                        {hour: '12:00', activity: 45}, {hour: '13:00', activity: 40},
+                        {hour: '14:00', activity: 35}, {hour: '15:00', activity: 32},
+                        {hour: '16:00', activity: 28}, {hour: '17:00', activity: 25},
+                        {hour: '18:00', activity: 22}, {hour: '19:00', activity: 18},
+                        {hour: '20:00', activity: 12}, {hour: '21:00', activity: 8}
+                    ],
+                    mood_analysis: {
+                        mood_distribution: {
+                            happy: 35,
+                            neutral: 40,
+                            stressed: 15,
+                            tired: 8,
+                            excited: 2
+                        }
+                    },
+                    ai_performance: {
+                        response_times: {avg: 1.2, p95: 2.8, p99: 4.1}
+                    },
+                    weather_impact: {
+                        weather_preferences: {
+                            cold_days: {hot_drinks: 85, cold_drinks: 15}
+                        }
+                    },
+                    popular_items: [
+                        {name: 'Cappuccino', orders: 245, change: 12.5},
+                        {name: 'Latte', orders: 198, change: -3.2},
+                        {name: 'Cold Brew', orders: 156, change: 8.7},
+                        {name: 'Americano', orders: 134, change: 5.1},
+                        {name: 'Mocha', orders: 89, change: -1.8}
+                    ]
+                };
+
+                this.updateMetrics(mockData);
+                this.createCharts(mockData);
+            }
+
+            formatNumber(num) {
+                if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1) + 'M';
+                } else if (num >= 1000) {
+                    return (num / 1000).toFixed(1) + 'K';
+                }
+                return num.toString();
+            }
+
+            startAutoRefresh() {
+                // Refresh every 5 minutes
+                this.refreshInterval = setInterval(() => {
+                    this.loadDashboard();
+                }, 5 * 60 * 1000);
+            }
+
+            stopAutoRefresh() {
+                if (this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
+                }
+            }
+        }
+
+        // Global refresh function
+        function refreshDashboard() {
+            if (window.dashboard) {
+                window.dashboard.loadDashboard();
+            }
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.dashboard = new AnalyticsDashboard();
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (window.dashboard) {
+                window.dashboard.stopAutoRefresh();
+            }
+        });
+    </script>
+</body>
+</html>

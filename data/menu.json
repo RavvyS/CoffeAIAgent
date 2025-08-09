@@ -1,0 +1,267 @@
+{
+  "shop_info": {
+    "name": "Claude's Coffee Corner",
+    "location": "Downtown",
+    "hours": "6:00 AM - 9:00 PM",
+    "phone": "(555) 123-BREW"
+  },
+  "categories": [
+    {
+      "id": "hot_coffee",
+      "name": "Hot Coffee",
+      "description": "Freshly brewed hot coffee beverages",
+      "items": [
+        {
+          "id": "americano",
+          "name": "Americano",
+          "description": "Rich espresso with hot water",
+          "price": 3.25,
+          "sizes": ["Small", "Medium", "Large"],
+          "customizations": ["Extra shot", "Decaf", "Half-caff"],
+          "allergens": [],
+          "calories": {"Small": 5, "Medium": 10, "Large": 15}
+        },
+        {
+          "id": "cappuccino",
+          "name": "Cappuccino",
+          "description": "Espresso with steamed milk and foam",
+          "price": 4.50,
+          "sizes": ["Small", "Medium", "Large"],
+          "customizations": ["Oat milk", "Almond milk", "Soy milk", "Extra hot", "Extra foam"],
+          "allergens": ["milk"],
+          "calories": {"Small": 120, "Medium": 150, "Large": 190}
+        },
+        {
+          "id": "latte",
+          "name": "Latte",
+          "description": "Smooth espresso with steamed milk",
+          "price": 4.75,
+          "sizes": ["Small", "Medium", "Large"],
+          "customizations": ["Vanilla", "Caramel", "Hazelnut", "Sugar-free options"],
+          "allergens": ["milk"],
+          "calories": {"Small": 140, "Medium": 190, "Large": 240}
+        },
+        {
+          "id": "mocha",
+          "name": "Mocha",
+          "description": "Chocolate and espresso with steamed milk",
+          "price": 5.25,
+          "sizes": ["Small", "Medium", "Large"],
+          "customizations": ["Whipped cream", "Dark chocolate", "White chocolate"],
+          "allergens": ["milk"],
+          "calories": {"Small": 260, "Medium": 340, "Large": 420}
+        }
+      ]
+    },
+    {
+      "id": "cold_coffee",
+      "name": "Cold Coffee",
+      "description": "Refreshing iced coffee beverages",
+      "items": [
+        {
+          "id": "iced_coffee",
+          "name": "Iced Coffee",
+          "description": "Cold brew over ice",
+          "price": 3.50,
+          "sizes": ["Medium", "Large"],
+          "customizations": ["Cream", "Sugar", "Flavored syrups"],
+          "allergens": [],
+          "calories": {"Medium": 5, "Large": 5}
+        },
+        {
+          "id": "cold_brew",
+          "name": "Cold Brew",
+          "description": "Smooth, slow-steeped cold coffee",
+          "price": 4.25,
+          "sizes": ["Medium", "Large"],
+          "customizations": ["Vanilla", "Caramel", "Cream"],
+          "allergens": [],
+          "calories": {"Medium": 5, "Large": 5}
+        },
+        {
+          "id": "iced_latte",
+          "name": "Iced Latte",
+          "description": "Espresso with cold milk over ice",
+          "price": 4.75,
+          "sizes": ["Medium", "Large"],
+          "customizations": ["Oat milk", "Almond milk", "Flavored syrups"],
+          "allergens": ["milk"],
+          "calories": {"Medium": 130, "Large": 190}
+        },
+        {
+          "id": "frappuccino",
+          "name": "Frappuccino",
+          "description": "Blended coffee drink with ice",
+          "price": 5.75,
+          "sizes": ["Medium", "Large"],
+          "customizations": ["Whipped cream", "Extra coffee", "Caramel drizzle"],
+          "allergens": ["milk"],
+          "calories": {"Medium": 320, "Large": 410}
+        }
+      ]
+    },
+    {
+      "id": "tea",
+      "name": "Tea & Herbal Drinks",
+      "description": "Premium teas and herbal beverages",
+      "items": [
+        {
+          "id": "chai_latte",
+          "name": "Chai Latte",
+          "description": "Spiced tea with steamed milk",
+          "price": 4.25,
+          "sizes": ["Small", "Medium", "Large"],
+          "customizations": ["Extra spicy", "Honey", "Alternative milks"],
+          "allergens": ["milk"],
+          "calories": {"Small": 120, "Medium": 160, "Large": 200}
+        },
+        {
+          "id": "green_tea",
+          "name": "Green Tea",
+          "description": "Antioxidant-rich green tea",
+          "price": 2.75,
+          "sizes": ["Small", "Medium", "Large"],
+          "customizations": ["Honey", "Lemon", "Jasmine"],
+          "allergens": [],
+          "calories": {"Small": 2, "Medium": 2, "Large": 2}
+        },
+        {
+          "id": "chamomile",
+          "name": "Chamomile Tea",
+          "description": "Calming herbal tea",
+          "price": 3.25,
+          "sizes": ["Small", "Medium", "Large"],
+          "customizations": ["Honey", "Lemon"],
+          "allergens": [],
+          "calories": {"Small": 2, "Medium": 2, "Large": 2}
+        },
+        {
+          "id": "earl_grey",
+          "name": "Earl Grey",
+          "description": "Classic bergamot-flavored black tea",
+          "price": 3.00,
+          "sizes": ["Small", "Medium", "Large"],
+          "customizations": ["Milk", "Honey", "Lemon"],
+          "allergens": [],
+          "calories": {"Small": 2, "Medium": 2, "Large": 2}
+        }
+      ]
+    },
+    {
+      "id": "specialty",
+      "name": "Specialty Drinks",
+      "description": "Unique seasonal and signature beverages",
+      "items": [
+        {
+          "id": "golden_milk",
+          "name": "Golden Milk Latte",
+          "description": "Turmeric and spice latte",
+          "price": 5.25,
+          "sizes": ["Medium", "Large"],
+          "customizations": ["Coconut milk", "Extra turmeric", "Honey"],
+          "allergens": [],
+          "calories": {"Medium": 140, "Large": 180}
+        },
+        {
+          "id": "matcha_latte",
+          "name": "Matcha Latte",
+          "description": "Premium matcha with steamed milk",
+          "price": 5.50,
+          "sizes": ["Medium", "Large"],
+          "customizations": ["Oat milk", "Extra matcha", "Sweetener"],
+          "allergens": ["milk"],
+          "calories": {"Medium": 160, "Large": 200}
+        },
+        {
+          "id": "hot_chocolate",
+          "name": "Hot Chocolate",
+          "description": "Rich, creamy hot chocolate",
+          "price": 4.25,
+          "sizes": ["Small", "Medium", "Large"],
+          "customizations": ["Whipped cream", "Marshmallows", "Peppermint"],
+          "allergens": ["milk"],
+          "calories": {"Small": 240, "Medium": 320, "Large": 400}
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "name": "Food",
+      "description": "Fresh pastries, sandwiches, and snacks",
+      "items": [
+        {
+          "id": "croissant",
+          "name": "Butter Croissant",
+          "description": "Flaky, buttery French pastry",
+          "price": 3.75,
+          "customizations": ["Warmed"],
+          "allergens": ["gluten", "milk"],
+          "calories": 270
+        },
+        {
+          "id": "muffin_blueberry",
+          "name": "Blueberry Muffin",
+          "description": "Fresh blueberries in vanilla muffin",
+          "price": 3.25,
+          "customizations": ["Warmed"],
+          "allergens": ["gluten", "eggs", "milk"],
+          "calories": 320
+        },
+        {
+          "id": "bagel_everything",
+          "name": "Everything Bagel",
+          "description": "Toasted bagel with cream cheese",
+          "price": 4.50,
+          "customizations": ["Plain cream cheese", "Veggie cream cheese"],
+          "allergens": ["gluten", "milk"],
+          "calories": 380
+        },
+        {
+          "id": "avocado_toast",
+          "name": "Avocado Toast",
+          "description": "Smashed avocado on sourdough",
+          "price": 6.75,
+          "customizations": ["Everything seasoning", "Tomato", "Egg"],
+          "allergens": ["gluten"],
+          "calories": 290
+        },
+        {
+          "id": "breakfast_sandwich",
+          "name": "Breakfast Sandwich",
+          "description": "Egg, cheese, and choice of meat",
+          "price": 7.25,
+          "customizations": ["Bacon", "Sausage", "Ham", "No meat"],
+          "allergens": ["gluten", "eggs", "milk"],
+          "calories": 450
+        }
+      ]
+    }
+  ],
+  "daily_specials": [
+    {
+      "day": "Monday",
+      "item": "Mocha Monday",
+      "description": "All mochas 20% off",
+      "discount": 0.20
+    },
+    {
+      "day": "Tuesday",
+      "item": "Tea Tuesday",
+      "description": "Buy one tea, get one 50% off",
+      "discount": 0.50
+    },
+    {
+      "day": "Wednesday",
+      "item": "Cold Brew Wednesday",
+      "description": "Large cold brew for medium price",
+      "discount": 0.15
+    }
+  ],
+  "dietary_options": {
+    "milk_alternatives": ["Oat milk (+$0.60)", "Almond milk (+$0.60)", "Soy milk (+$0.60)", "Coconut milk (+$0.60)"],
+    "sugar_free": ["Sugar-free vanilla", "Sugar-free caramel", "Sugar-free hazelnut"],
+    "decaf": "Available for all coffee drinks",
+    "gluten_free": "Limited pastry options available",
+    "vegan": "Plant-based milk options available"
+  }
+}

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Management - Claude's Coffee Corner</title>
+    <link rel="stylesheet" href="/static/css/chat.css">
+    <style>
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--bg-primary);
+            min-height: 100vh;
+        }
+        
+        .dashboard-header {
+            background: var(--coffee-dark);
+            color: var(--foam);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 12px var(--shadow-light);
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--coffee-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .queues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .queue-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 12px var(--shadow-light);
+            overflow: hidden;
+        }
+        
+        .queue-header {
+            background: var(--coffee-primary);
+            color: var(--foam);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .queue-title {
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        
+        .queue-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+        }
+        
+        .queue-body {
+            padding: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .queue-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            background: var(--bg-primary);
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--coffee-light);
+        }
+        
+        .queue-entry.called {
+            border-left-color: var(--warning);
+            background: #fffbf0;
+        }
+        
+        .queue-entry.preparing {
+            border-left-color: var(--info);
+            background: #f0f9ff;
+        }
+        
+        .entry-info {
+            flex: 1;
+        }
+        
+        .entry-name {
+            font-weight: 600;
+            color: var(--coffee-dark);
+            margin-bottom: 0.25rem;
+        }
+        
+        .entry-details {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .entry-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+        
+        .call-btn {
+            background: var(--success);
+            color: white;
+        }
+        
+        .call-btn:hover {
+            background: #16a34a;
+        }
+        
+        .complete-btn {
+            background: var(--coffee-primary);
+            color: white;
+        }
+        
+        .complete-btn:hover {
+            background: var(--coffee-dark);
+        }
+        
+        .cancel-btn {
+            background: var(--error);
+            color: white;
+        }
+        
+        .cancel-btn:hover {
+            background: #dc2626;
+        }
+        
+        .empty-queue {
+            text-align: center;
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 2rem;
+        }
+        
+        .controls-section {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 12px var(--shadow-light);
+            margin-bottom: 2rem;
+        }
+        
+        .controls-header {
+            color: var(--coffee-dark);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .control-btn {
+            background: var(--coffee-light);
+            color: var(--coffee-dark);
+            padding: 1rem;
+            border: none;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all var(--transition-fast);
+        }
+        
+        .control-btn:hover {
+            background: var(--coffee-primary);
+            color: var(--foam);
+            transform: translateY(-2px);
+        }
+        
+        .refresh-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--coffee-primary);
+            color: var(--foam);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+        
+        .refresh-indicator.show {
+            opacity: 1;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1>
+                <span class="live-indicator"></span>
+                Queue Management Dashboard
+            </h1>
+            <p>Real-time queue monitoring and customer management</p>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalWaiting">0</div>
+                <div class="stat-label">Total Waiting</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgWaitTime">0</div>
+                <div class="stat-label">Avg Wait (min)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="tablesAvailable">0</div>
+                <div class="stat-label">Tables Available</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="appointmentsToday">0</div>
+                <div class="stat-label">Appointments Today</div>
+            </div>
+        </div>
+        
+        <!-- Quick Controls -->
+        <div class="controls-section">
+            <h3 class="controls-header">Quick Actions</h3>
+            <div class="controls-grid">
+                <button class="control-btn" onclick="callNextWalkIn()">
+                    📞 Call Next Walk-in
+                </button>
+                <button class="control-btn" onclick="callNextDineIn()">
+                    🍽️ Call Next Dine-in
+                </button>
+                <button class="control-btn" onclick="generateQR()">
+                    📱 Generate Table QR
+                </button>
+                <button class="control-btn" onclick="refreshData()">
+                    🔄 Refresh Data
+                </button>
+            </div>
+        </div>
+        
+        <!-- Queue Display -->
+        <div class="queues-grid" id="queuesGrid">
+            <!-- Queue cards will be populated here -->
+        </div>
+        
+        <!-- Refresh Indicator -->
+        <div class="refresh-indicator" id="refreshIndicator">
+            Refreshing...
+        </div>
+    </div>
+    
+    <script>
+        class QueueDashboard {
+            constructor() {
+                this.refreshInterval = null;
+                this.initializeEventListeners();
+                this.startAutoRefresh();
+                this.loadData();
+            }
+            
+            initializeEventListeners() {
+                // Auto-refresh every 10 seconds
+                this.refreshInterval = setInterval(() => {
+                    this.loadData();
+                }, 10000);
+            }
+            
+            async loadData() {
+                try {
+                    this.showRefreshIndicator();
+                    
+                    const response = await fetch('/api/queue/summary');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.updateStatistics(data.analytics);
+                        this.updateQueues(data.analytics.queue_summary);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                } finally {
+                    this.hideRefreshIndicator();
+                }
+            }
+            
+            updateStatistics(analytics) {
+                document.getElementById('totalWaiting').textContent = analytics.overall.total_waiting;
+                document.getElementById('avgWaitTime').textContent = analytics.average_wait_time;
+                document.getElementById('tablesAvailable').textContent = analytics.overall.available_tables;
+                document.getElementById('appointmentsToday').textContent = analytics.upcoming_appointments;
+            }
+            
+            updateQueues(queueSummary) {
+                const queuesGrid = document.getElementById('queuesGrid');
+                queuesGrid.innerHTML = '';
+                
+                const queueTypes = ['walk_in', 'dine_in', 'takeaway', 'delivery'];
+                
+                queueTypes.forEach(queueType => {
+                    const queueData = queueSummary[queueType];
+                    if (queueData) {
+                        const queueCard = this.createQueueCard(queueType, queueData);
+                        queuesGrid.appendChild(queueCard);
+                    }
+                });
+            }
+            
+            createQueueCard(queueType, queueData) {
+                const card = document.createElement('div');
+                card.className = 'queue-card';
+                
+                const queueName = queueType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                
+                card.innerHTML = `
+                    <div class="queue-header">
+                        <span class="queue-title">${queueName}</span>
+                        <span class="queue-count">${queueData.waiting} waiting</span>
+                    </div>
+                    <div class="queue-body" id="queue-${queueType}">
+                        ${queueData.waiting === 0 ? 
+                            '<div class="empty-queue">No customers waiting</div>' :
+                            this.generateMockEntries(queueType, queueData.waiting)
+                        }
+                    </div>
+                `;
+                
+                return card;
+            }
+            
+            generateMockEntries(queueType, count) {
+                // Generate mock entries for demonstration
+                const names = ['Sarah Johnson', 'Mike Chen', 'Emma Davis', 'Alex Rodriguez', 'Lisa Park'];
+                let entries = '';
+                
+                for (let i = 0; i < Math.min(count, 5); i++) {
+                    const name = names[i] || `Customer ${i + 1}`;
+                    const waitTime = (i + 1) * 5;
+                    const status = i === 0 ? 'called' : (i === 1 ? 'preparing' : 'waiting');
+                    const partySize = Math.floor(Math.random() * 4) + 1;
+                    
+                    entries += `
+                        <div class="queue-entry ${status}">
+                            <div class="entry-info">
+                                <div class="entry-name">#${i + 1} ${name}</div>
+                                <div class="entry-details">
+                                    Party of ${partySize} • Wait: ${waitTime}min • ${status}
+                                </div>
+                            </div>
+                            <div class="entry-actions">
+                                ${status === 'waiting' ? 
+                                    `<button class="action-btn call-btn" onclick="callCustomer('${queueType}', '${name}')">Call</button>` :
+                                    `<button class="action-btn complete-btn" onclick="completeService('${queueType}', '${name}')">Complete</button>`
+                                }
+                                <button class="action-btn cancel-btn" onclick="cancelEntry('${queueType}', '${name}')">Cancel</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                return entries;
+            }
+            
+            showRefreshIndicator() {
+                const indicator = document.getElementById('refreshIndicator');
+                indicator.classList.add('show');
+            }
+            
+            hideRefreshIndicator() {
+                const indicator = document.getElementById('refreshIndicator');
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 500);
+            }
+            
+            startAutoRefresh() {
+                // Refresh every 10 seconds
+                setInterval(() => {
+                    this.loadData();
+                }, 10000);
+            }
+        }
+        
+        // Global functions for button actions
+        async function callNextWalkIn() {
+            try {
+                const response = await fetch('/api/queue/call-next/walk_in', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Called ${data.customer.customer_name} for walk-in service`);
+                    dashboard.loadData();
+                } else {
+                    alert('No customers in walk-in queue');
+                }
+            } catch (error) {
+                alert('Error calling next customer');
+                console.error(error);
+            }
+        }
+        
+        async function callNextDineIn() {
+            try {
+                const response = await fetch('/api/queue/call-next/dine_in', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Called ${data.customer.customer_name} for dine-in service. Table: ${data.customer.table_number}`);
+                    dashboard.loadData();
+                } else {
+                    alert('No customers in dine-in queue');
+                }
+            } catch (error) {
+                alert('Error calling next customer');
+                console.error(error);
+            }
+        }
+        
+        async function generateQR() {
+            const tableNumber = prompt('Enter table number (1-20):');
+            if (!tableNumber) return;
+            
+            try {
+                const response = await fetch(`/api/qr/generate/${tableNumber}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Open QR code in new window
+                    const qrWindow = window.open('', '_blank', 'width=400,height=500');
+                    qrWindow.document.write(`
+                        <html>
+                            <head><title>Table ${tableNumber} QR Code</title></head>
+                            <body style="text-align: center; padding: 20px; font-family: Arial;">
+                                <h2>Table ${tableNumber} QR Code</h2>
+                                <img src="${data.qr_code}" alt="QR Code" style="max-width: 300px;">
+                                <p><strong>QR ID:</strong> ${data.qr_id}</p>
+                                <p><strong>URL:</strong> ${data.url}</p>
+                                <button onclick="window.print()" style="margin-top: 20px; padding: 10px 20px;">Print</button>
+                            </body>
+                        </html>
+                    `);
+                } else {
+                    alert('Error generating QR code');
+                }
+            } catch (error) {
+                alert('Error generating QR code');
+                console.error(error);
+            }
+        }
+        
+        function refreshData() {
+            dashboard.loadData();
+        }
+        
+        function callCustomer(queueType, customerName) {
+            // Mock implementation
+            alert(`Calling ${customerName} from ${queueType} queue`);
+            dashboard.loadData();
+        }
+        
+        function completeService(queueType, customerName) {
+            // Mock implementation
+            alert(`Completed service for ${customerName}`);
+            dashboard.loadData();
+        }
+        
+        function cancelEntry(queueType, customerName) {
+            if (confirm(`Cancel queue entry for ${customerName}?`)) {
+                alert(`Cancelled entry for ${customerName}`);
+                dashboard.loadData();
+            }
+        }
+        
+        // Initialize dashboard
+        let dashboard;
+        document.addEventListener('DOMContentLoaded', () => {
+            dashboard = new QueueDashboard();
+        });
+    </script>
+</body>
+</html>

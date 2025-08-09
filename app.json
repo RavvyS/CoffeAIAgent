@@ -1,0 +1,80 @@
+# app.json - Heroku app configuration
+{
+  "name": "Coffee Shop AI Agent",
+  "description": "Intelligent conversational agent for coffee shop ordering",
+  "repository": "https://github.com/yourusername/coffee-shop-ai",
+  "logo": "https://your-domain.com/static/icons/icon-512x512.png",
+  "keywords": ["fastapi", "ai", "chatbot", "coffee", "websocket", "pwa"],
+  "stack": "heroku-22",
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-redis:mini",
+      "as": "REDIS"
+    }
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "ENVIRONMENT": {
+      "description": "Environment name",
+      "value": "production"
+    },
+    "GEMINI_API_KEY": {
+      "description": "Google Gemini API key",
+      "required": true
+    },
+    "WEATHER_API_KEY": {
+      "description": "OpenWeatherMap API key (optional)",
+      "required": false
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for sessions",
+      "generator": "secret"
+    },
+    "ALLOWED_HOSTS": {
+      "description": "Allowed hosts (comma-separated)",
+      "value": "*.herokuapp.com"
+    },
+    "ALLOWED_ORIGINS": {
+      "description": "Allowed CORS origins (comma-separated)", 
+      "value": "https://*.herokuapp.com"
+    },
+    "LOG_LEVEL": {
+      "description": "Logging level",
+      "value": "INFO"
+    },
+    "WEB_CONCURRENCY": {
+      "description": "Number of worker processes",
+      "value": "2"
+    }
+  },
+  "scripts": {
+    "postdeploy": "echo 'Deployment completed successfully!'"
+  },
+  "environments": {
+    "test": {
+      "addons": ["heroku-redis:mini"],
+      "env": {
+        "ENVIRONMENT": "test"
+      },
+      "formation": {
+        "web": {
+          "quantity": 1,
+          "size": "basic"
+        }
+      },
+      "scripts": {
+        "test": "python -m pytest"
+      }
+    }
+  }
+}

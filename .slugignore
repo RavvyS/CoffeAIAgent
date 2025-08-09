@@ -1,0 +1,20 @@
+# .slugignore - Files to exclude from Heroku slug
+*.pyc
+__pycache__/
+.git/
+.env
+.env.*
+*.log
+.DS_Store
+.vscode/
+.idea/
+tests/
+docs/
+README.md
+*.md
+.gitignore
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/

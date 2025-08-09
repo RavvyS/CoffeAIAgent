@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Claude's Coffee Corner</title>
+    <link rel="stylesheet" href="/static/css/chat.css">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .payment-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-xl);
+            box-shadow: 0 10px 30px var(--shadow-medium);
+        }
+        
+        .payment-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--coffee-dark);
+        }
+        
+        .order-summary {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            color: var(--coffee-dark);
+        }
+        
+        .payment-form {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--coffee-dark);
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            transition: border-color var(--transition-fast);
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--coffee-primary);
+        }
+        
+        .tip-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tip-button {
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: center;
+        }
+        
+        .tip-button:hover,
+        .tip-button.selected {
+            border-color: var(--coffee-primary);
+            background: var(--coffee-light);
+        }
+        
+        .payment-element {
+            margin: 1rem 0;
+        }
+        
+        .pay-button {
+            width: 100%;
+            background: var(--coffee-primary);
+            color: var(--foam);
+            border: none;
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-top: 1rem;
+        }
+        
+        .pay-button:hover:not(:disabled) {
+            background: var(--coffee-dark);
+            transform: translateY(-2px);
+        }
+        
+        .pay-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: var(--error);
+            color: white;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin: 1rem 0;
+        }
+        
+        .success-message {
+            background: var(--success);
+            color: white;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin: 1rem 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="payment-header">
+            <h1>Complete Your Order</h1>
+            <p>Almost there! Let's process your payment.</p>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <h3>Order Summary</h3>
+            <div id="orderItems">
+                <!-- Order items will be populated here -->
+                <div class="order-item">
+                    <span>Large Latte with Oat Milk</span>
+                    <span>$5.35</span>
+                </div>
+                <div class="order-item">
+                    <span>Blueberry Muffin</span>
+                    <span>$3.25</span>
+                </div>
+            </div>
+            <div class="order-item">
+                <span>Subtotal:</span>
+                <span id="subtotal">$8.60</span>
+            </div>
+            <div class="order-item">
+                <span>Tax:</span>
+                <span id="tax">$0.69</span>
+            </div>
+            <div class="order-item">
+                <span>Tip:</span>
+                <span id="tipAmount">$0.00</span>
+            </div>
+            <div class="order-item">
+                <span>Total:</span>
+                <span id="total">$9.29</span>
+            </div>
+        </div>
+        
+        <!-- Payment Form -->
+        <form id="paymentForm" class="payment-form">
+            <!-- Customer Information -->
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" id="customerName" class="form-input" placeholder="Your name" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="customerEmail" class="form-input" placeholder="your@email.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Phone (optional)</label>
+                <input type="tel" id="customerPhone" class="form-input" placeholder="(555) 123-4567">
+            </div>
+            
+            <!-- Tip Selection -->
+            <div class="form-group">
+                <label class="form-label">Add a tip?</label>
+                <div class="tip-options">
+                    <button type="button" class="tip-button" data-tip="0">No Tip</button>
+                    <button type="button" class="tip-button" data-tip="15">15%</button>
+                    <button type="button" class="tip-button selected" data-tip="18">18%</button>
+                    <button type="button" class="tip-button" data-tip="20">20%</button>
+                </div>
+                <input type="number" id="customTip" class="form-input" placeholder="Custom tip amount" step="0.01" style="margin-top: 0.5rem;">
+            </div>
+            
+            <!-- Stripe Elements will be inserted here -->
+            <div class="form-group">
+                <label class="form-label">Payment Information</label>
+                <div id="payment-element" class="payment-element">
+                    <!-- Stripe Elements will create form elements here -->
+                </div>
+            </div>
+            
+            <!-- Error Display -->
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            
+            <!-- Success Display -->
+            <div id="success-message" class="success-message" style="display: none;">
+                <h3>Payment Successful! 🎉</h3>
+                <p>Your order has been received and is being prepared.</p>
+                <p>Estimated ready time: <span id="readyTime">5-7 minutes</span></p>
+            </div>
+            
+            <!-- Pay Button -->
+            <button type="submit" id="payButton" class="pay-button">
+                Pay Now
+            </button>
+        </form>
+    </div>
+    
+    <script>
+        class PaymentHandler {
+            constructor() {
+                this.stripe = null;
+                this.elements = null;
+                this.paymentElement = null;
+                this.clientSecret = null;
+                this.currentOrder = null;
+                
+                this.initializeStripe();
+                this.setupEventListeners();
+                this.loadOrderData();
+            }
+            
+            async initializeStripe() {
+                try {
+                    // Get payment config
+                    const configResponse = await fetch('/api/payment-config');
+                    const config = await configResponse.json();
+                    
+                    if (!config.enabled) {
+                        this.showMockPayment();
+                        return;
+                    }
+                    
+                    // Initialize Stripe
+                    this.stripe = Stripe(config.stripe_publishable_key);
+                    
+                    // Create payment intent
+                    await this.createPaymentIntent();
+                    
+                } catch (error) {
+                    console.error('Error initializing Stripe:', error);
+                    this.showError('Payment system unavailable. Please try again later.');
+                }
+            }
+            
+            async createPaymentIntent() {
+                try {
+                    const response = await fetch('/api/orders/demo/payment-intent', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            session_id: 'payment_demo',
+                            tip_amount: this.calculateTip()
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.clientSecret = data.client_secret;
+                        this.currentOrder = data.order;
+                        this.setupStripeElements();
+                        this.updateOrderDisplay();
+                    } else {
+                        this.showError(data.error_message || 'Failed to create payment intent');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error creating payment intent:', error);
+                    this.showError('Failed to initialize payment. Please try again.');
+                }
+            }
+            
+            setupStripeElements() {
+                const appearance = {
+                    theme: 'stripe',
+                    variables: {
+                        colorPrimary: '#8B4513',
+                        colorBackground: '#ffffff',
+                        colorText: '#2D2D2D',
+                        colorDanger: '#EF4444',
+                        fontFamily: 'Inter, system-ui, sans-serif',
+                        spacingUnit: '4px',
+                        borderRadius: '8px'
+                    }
+                };
+                
+                this.elements = this.stripe.elements({
+                    clientSecret: this.clientSecret,
+                    appearance: appearance
+                });
+                
+                this.paymentElement = this.elements.create('payment');
+                this.paymentElement.mount('#payment-element');
+            }
+            
+            setupEventListeners() {
+                // Tip selection
+                document.querySelectorAll('.tip-button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        document.querySelectorAll('.tip-button').forEach(b => b.classList.remove('selected'));
+                        button.classList.add('selected');
+                        document.getElementById('customTip').value = '';
+                        this.updateTotals();
+                    });
+                });
+                
+                // Custom tip
+                document.getElementById('customTip').addEventListener('input', () => {
+                    document.querySelectorAll('.tip-button').forEach(b => b.classList.remove('selected'));
+                    this.updateTotals();
+                });
+                
+                // Form submission
+                document.getElementById('paymentForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handlePayment();
+                });
+            }
+            
+            calculateTip() {
+                const customTip = parseFloat(document.getElementById('customTip').value) || 0;
+                if (customTip > 0) {
+                    return customTip;
+                }
+                
+                const selectedTip = document.querySelector('.tip-button.selected');
+                if (selectedTip) {
+                    const tipPercent = parseInt(selectedTip.dataset.tip);
+                    const subtotal = this.currentOrder ? this.currentOrder.subtotal : 8.60;
+                    return (subtotal * tipPercent / 100);
+                }
+                
+                return 0;
+            }
+            
+            updateTotals() {
+                const tipAmount = this.calculateTip();
+                document.getElementById('tipAmount').textContent = `$${tipAmount.toFixed(2)}`;
+                
+                const subtotal = this.currentOrder ? this.currentOrder.subtotal : 8.60;
+                const tax = this.currentOrder ? this.currentOrder.tax_amount : 0.69;
+                const total = subtotal + tax + tipAmount;
+                
+                document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+            }
+            
+            updateOrderDisplay() {
+                if (this.currentOrder) {
+                    document.getElementById('subtotal').textContent = `$${this.currentOrder.subtotal.toFixed(2)}`;
+                    document.getElementById('tax').textContent = `$${this.currentOrder.tax_amount.toFixed(2)}`;
+                    this.updateTotals();
+                }
+            }
+            
+            async handlePayment() {
+                if (!this.stripe || !this.elements) {
+                    this.handleMockPayment();
+                    return;
+                }
+                
+                const payButton = document.getElementById('payButton');
+                payButton.disabled = true;
+                payButton.innerHTML = '<span class="loading"></span> Processing...';
+                
+                // Confirm payment with Stripe
+                const {error} = await this.stripe.confirmPayment({
+                    elements: this.elements,
+                    confirmParams: {
+                        return_url: window.location.origin + '/payment-success',
+                        payment_method_data: {
+                            billing_details: {
+                                name: document.getElementById('customerName').value,
+                                email: document.getElementById('customerEmail').value,
+                                phone: document.getElementById('customerPhone').value
+                            }
+                        }
+                    }
+                });
+                
+                if (error) {
+                    this.showError(error.message);
+                    payButton.disabled = false;
+                    payButton.textContent = 'Pay Now';
+                } else {
+                    this.showSuccess();
+                }
+            }
+            
+            handleMockPayment() {
+                const payButton = document.getElementById('payButton');
+                payButton.disabled = true;
+                payButton.innerHTML = '<span class="loading"></span> Processing...';
+                
+                // Simulate payment processing
+                setTimeout(() => {
+                    this.showSuccess();
+                }, 2000);
+            }
+            
+            showMockPayment() {
+                // Hide Stripe elements and show mock payment
+                document.getElementById('payment-element').innerHTML = 
+                    '<div style="padding: 1rem; background: #f0f0f0; border-radius: 8px; text-align: center;">' +
+                    '<p><strong>Demo Mode</strong></p>' +
+                    '<p>This is a demonstration. No real payment will be processed.</p>' +
+                    '</div>';
+            }
+            
+            showError(message) {
+                const errorElement = document.getElementById('error-message');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                
+                // Hide error after 5 seconds
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 5000);
+            }
+            
+            showSuccess() {
+                document.getElementById('paymentForm').style.display = 'none';
+                document.getElementById('success-message').style.display = 'block';
+                
+                // Redirect after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 3000);
+            }
+            
+            loadOrderData() {
+                // In a real app, you'd load this from the session or URL params
+                // For demo, we'll use sample data
+                this.updateTotals();
+            }
+        }
+        
+        // Initialize payment handler when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new PaymentHandler();
+        });
+    </script>
+</body>
+</html>
